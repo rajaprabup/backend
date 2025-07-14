@@ -1,3 +1,4 @@
+print(">>> Starting Flask App...")
 
 import joblib
 import pandas as pd

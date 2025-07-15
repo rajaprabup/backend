@@ -7,7 +7,7 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 # API Key (use env var in production)
-VALID_API_KEY = os.environ.get("API_KEY", "prp-secret-key")
+VALID_API_KEY = os.environ.get("API_KEY", "PwCiCuCpz18F")
 
 # =========================
 # API Key Authentication

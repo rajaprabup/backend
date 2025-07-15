@@ -1,15 +1,19 @@
-print(">>> Starting Flask App...")
-
 import joblib
 import pandas as pd
 import numpy as np
 import shap
 from flask import Flask, request, jsonify
 
-
 # Initialize Flask app with a name
-shipping_return_predictor_api = Flask("Shipping Return Prediction")
+app = Flask(__name__)  # ✅ Define app FIRST
 
+# Optional: Check API Key or Token before every request
+@app.before_request
+def check_api_key():
+    api_key = request.args.get("key")
+    if api_key != "prp-secret-key":
+        return jsonify({"error": "Forbidden"}), 403
+    
 # Load the trained shipping return prediction model
 model = joblib.load("shipping_return_prediction_model_v1_0.joblib")
 
@@ -23,12 +27,12 @@ classifier = model.named_steps['xgbclassifier']
 # explainer = shap.TreeExplainer(classifier)
 
 # Define a route for the home page
-@shipping_return_predictor_api.get('/')
+@app.get('/')
 def home():
     return "Welcome to the Shipping Return Prediction API!"
 
 # Define an endpoint to predict shipping return for a single store product
-@shipping_return_predictor_api.post('/v1/shippingreturn')
+@app.post('/v1/shippingreturn')
 def predict_shipping_return():
     # Get JSON data from the request
     product_data = request.get_json()
@@ -81,7 +85,7 @@ def predict_shipping_return():
         return jsonify({"error": str(e)}), 500
 
 # Define an endpoint to predict shipping return for a batch of products
-@shipping_return_predictor_api.post('/v1/shippingreturnbatch')
+@app.post('/v1/shippingreturnbatch')
 def predict_shipping_return_batch():
   try:
     # Get the uploaded CSV file from the request
@@ -107,4 +111,4 @@ def predict_shipping_return_batch():
 
 # Run the Flask app in debug mode
 if __name__ == '__main__':
-    shipping_return_predictor_api.run(debug=True)
+    app.run(debug=True)

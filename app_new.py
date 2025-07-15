@@ -12,7 +12,7 @@ VALID_API_KEY = os.environ.get("API_KEY", "prp-secret-key")
 @app.before_request
 def check_api_key():
     api_key = request.headers.get("x-api-key")  # More secure than query param
-    if api_key != PRP_API_KEY:
+    if api_key != VALID_API_KEY:
         return jsonify({"error": "Forbidden - Invalid or missing API Key"}), 403
     
 # Load the trained model (includes preprocessor + classifier)

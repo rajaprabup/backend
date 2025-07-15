@@ -1,3 +1,11 @@
+VALID_KEY = "prp-api-key"
+
+@app.before_request
+def check_api_key():
+    key = request.args.get("key")
+    if key != VALID_KEY:
+        return jsonify({"error": "Forbidden"}), 403
+
 from flask import Flask, request, jsonify
 
 app = Flask(__name__)

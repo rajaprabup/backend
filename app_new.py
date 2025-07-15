@@ -1,21 +1,23 @@
+import os
 import joblib
 import pandas as pd
-import numpy as np
-import shap
 from flask import Flask, request, jsonify
 
-# Initialize Flask app with a name
-app = Flask(__name__)  # ✅ Define app FIRST
+# API Key (use env var in production)
+VALID_API_KEY = os.environ.get("API_KEY", "prp-secret-key")
 
-# Optional: Check API Key or Token before every request
+# =========================
+# API Key Authentication
+# =========================
 @app.before_request
 def check_api_key():
-    api_key = request.args.get("key")
-    if api_key != "prp-secret-key":
-        return jsonify({"error": "Forbidden"}), 403
+    api_key = request.headers.get("x-api-key")  # More secure than query param
+    if api_key != PRP_API_KEY:
+        return jsonify({"error": "Forbidden - Invalid or missing API Key"}), 403
     
-# Load the trained shipping return prediction model
-model = joblib.load("shipping_return_prediction_model_v1_0.joblib")
+# Load the trained model (includes preprocessor + classifier)
+MODEL_PATH = "shipping_return_prediction_model_v1_0.joblib"
+model = joblib.load(MODEL_PATH)
 
 # Extract preprocessor and model
 preprocessor = model.named_steps['columntransformer']
@@ -29,7 +31,7 @@ classifier = model.named_steps['xgbclassifier']
 # Define a route for the home page
 @app.get('/')
 def home():
-    return "Welcome to the Shipping Return Prediction API!"
+    return "🚚 Shipping Return Prediction API is live!"
 
 # Define an endpoint to predict shipping return for a single store product
 @app.post('/v1/shippingreturn')
@@ -109,6 +111,8 @@ def predict_shipping_return_batch():
   except Exception as e:
     return jsonify({"error": str(e)}), 500
 
-# Run the Flask app in debug mode
+# =========================
+# Entry Point (Local Only)
+# =========================
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=8080)
